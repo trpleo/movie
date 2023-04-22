@@ -1,0 +1,18 @@
+syntax = "proto3";
+package jpm.movie.model.v1;
+
+option java_multiple_files = true;
+option java_package = "jpm.movie.model.v1.proto.generated";
+
+import "model.proto";
+
+message RawRequestProto {
+  repeated int32 years = 1;
+  repeated string names = 2;
+  repeated string casts = 3;
+  repeated string genres = 4;
+}
+
+message QueryResult {
+  repeated MovieProto movies = 1;
+}
