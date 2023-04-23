@@ -1,9 +1,9 @@
-package jpm.movie.core.validators
+package jpm.movie.model
 
 import arrow.core.Nel
-import jpm.movie.model.Year
 
-sealed interface ValidationError {
+sealed interface Error
+sealed interface ValidationError : Error {
 
     val cause: String
 

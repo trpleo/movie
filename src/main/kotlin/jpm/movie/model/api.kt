@@ -20,7 +20,7 @@ data class ValidatedRequest(
 ) : MovieRequest
 
 /**
- * Interface that represents all possible answers could be send back to the client. The interface either can
+ * Interface that represents all possible answers could be sent back to the client. The interface either can
  * be a [ProcessSuccess] or a [ProcessFailure].
  *
  * Naturally, the service returns with a [ProcessFailure] in case of any kind of errors,
@@ -36,7 +36,4 @@ sealed interface ProcessFailure : MovieResponse
 
 data class QueryResult(val movies: Set<Movie>) : ProcessSuccess
 
-data class ErrorDescription(val message: String, val cause: String)
-
-data class InvalidQuery(val errors: Set<ErrorDescription>) : ProcessFailure
-data class ThirdPartyError(val errors: Set<ErrorDescription>) : ProcessFailure
+data class RequestFailure(val errors: Set<Error>) : ProcessFailure

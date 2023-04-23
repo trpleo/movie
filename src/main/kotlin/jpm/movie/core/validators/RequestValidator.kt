@@ -12,6 +12,7 @@ import jpm.movie.model.Genre
 import jpm.movie.model.MovieName
 import jpm.movie.model.RawRequest
 import jpm.movie.model.ValidatedRequest
+import jpm.movie.model.ValidationError
 import jpm.movie.model.Year as YS
 
 fun <T> List<T>.nonEmptyListToNel() = this.toNonEmptyListOrNull()!!

@@ -6,6 +6,8 @@ option java_package = "jpm.movie.model.v1.proto.generated";
 
 import "model.proto";
 
+/** REQUESTS */
+
 message RawRequestProto {
   repeated int32 years = 1;
   repeated string names = 2;
@@ -13,6 +15,57 @@ message RawRequestProto {
   repeated string genres = 4;
 }
 
-message QueryResult {
+/** RESPONSES */
+
+message MovieResponseProto {
+  oneof types {
+    QueryResultProto success = 1;
+    RequestFailureProto failure = 2;
+  }
+}
+
+/** RESPONSES / SUCCESSES */
+
+message QueryResultProto {
   repeated MovieProto movies = 1;
+}
+
+/** RESPONSES / FAILURES */
+message Error {
+  oneof types {
+    ValidationErrorProto validationError = 1;
+  }
+
+  message ValidationErrorProto {
+    oneof types {
+      OutOfBoundYearProto outOfBoundYear = 1;
+      InvalidGenreProto invalidGenre = 2;
+      InvalidMovieNameProto invalidMovieName = 3;
+      InvalidCastMemberProto invalidCastMember = 4;
+    }
+
+    message OutOfBoundYearProto {
+      string cause = 1;
+      repeated int32 invalidYears = 2;
+    }
+
+    message InvalidGenreProto {
+      string cause = 1;
+      repeated string invalidGenres = 2;
+    }
+
+    message InvalidMovieNameProto {
+      string cause = 1;
+      repeated string invalidNames = 2;
+    }
+
+    message InvalidCastMemberProto {
+      string cause = 1;
+      repeated string invalidNames = 2;
+    }
+  }
+}
+
+message RequestFailureProto {
+  repeated Error errors = 1;
 }
