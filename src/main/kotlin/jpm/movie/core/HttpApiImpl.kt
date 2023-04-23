@@ -9,17 +9,19 @@ import io.ktor.server.netty.NettyApplicationEngine
 import io.ktor.server.response.respondText
 import io.ktor.server.routing.get
 import io.ktor.server.routing.routing
+import java.time.Instant
 import java.util.logging.Logger
 import jpm.movie.Log
-
-interface HttpApi
 
 /**
  * Embedded Http server, that provides the APIs the service can be called.
  */
 @Singleton
-class HttpApiImpl @Inject constructor(private val httpConfig: HttpApiConfig, @Log private val logger: Logger) : HttpApi,
-    Service {
+class HttpApiImpl @Inject constructor(
+    private val httpConfig: HttpApiConfig,
+//    @Inject private val queryService: QueryService,
+    @Log private val logger: Logger,
+) : HttpApi, Service {
 
     private var applicationEngine: NettyApplicationEngine? = null
 
@@ -31,8 +33,16 @@ class HttpApiImpl @Inject constructor(private val httpConfig: HttpApiConfig, @Lo
     override fun start() {
         applicationEngine = embeddedServer(Netty, port = httpConfig.port, host = httpConfig.host) {
             routing {
-                get("/") {
-                    call.respondText("Hello, world!")
+                get("/healthcheck") {
+                    call.respondText(Instant.now().toEpochMilli().toString())
+                }
+                get("/movies") {
+                    val years = call.request.queryParameters["years"]
+                    val movieNames = call.request.queryParameters["titles"]
+                    val castMember = call.request.queryParameters["cast"]
+                    val genres = call.request.queryParameters["genres"]
+
+                    logger.info("years: [$years]; movies: [$movieNames]; cast: [$castMember]; genres: [$genres]")
                 }
             }
         }.start(wait = true)
