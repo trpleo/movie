@@ -8,7 +8,8 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
     kotlin("jvm") version "1.8.10"
-    id("com.google.protobuf") version "0.8.19"
+//    id("com.google.protobuf") version "0.8.19"
+    id("io.ktor.plugin") version "2.3.0"
     application
 }
 
@@ -36,6 +37,10 @@ dependencies {
     api("io.grpc:grpc-stub:1.53.0")
     api("io.grpc:grpc-kotlin-stub:1.3.0")
     api("com.google.protobuf:protobuf-kotlin:3.22.2")
+
+    // ktor
+    implementation("io.ktor:ktor-server-core")
+    implementation("io.ktor:ktor-server-netty")
 
     // test
     testImplementation(kotlin("test"))
