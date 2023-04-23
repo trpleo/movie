@@ -7,7 +7,7 @@ import org.gradle.api.attributes.Usage.USAGE_ATTRIBUTE
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
-    kotlin("jvm") version "1.8.10"
+    kotlin("jvm") version "1.8.20"
     id("com.google.protobuf") version "0.8.19"
     id("io.ktor.plugin") version "2.3.0"
     application
@@ -41,6 +41,13 @@ dependencies {
     // ktor
     implementation("io.ktor:ktor-server-core")
     implementation("io.ktor:ktor-server-netty")
+
+    // Guice
+    implementation("com.google.inject:guice:5.1.0")
+
+    // log4j
+    implementation("org.apache.logging.log4j:log4j-api:2.20.0")
+    implementation("org.apache.logging.log4j:log4j-core:2.20.0")
 
     // test
     testImplementation(kotlin("test"))
