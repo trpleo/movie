@@ -3,10 +3,12 @@ package jpm.movie.core.validators
 import arrow.core.Either
 import arrow.core.EitherNel
 import arrow.core.left
+import arrow.core.leftNel
 import arrow.core.raise.either
 import arrow.core.right
 import arrow.core.toNonEmptyListOrNull
 import java.time.Year
+import java.util.Locale
 import jpm.movie.model.CastMember
 import jpm.movie.model.Genre
 import jpm.movie.model.MovieName
@@ -18,25 +20,46 @@ import jpm.movie.model.Year as YS
 fun <T> List<T>.nonEmptyListToNel() = this.toNonEmptyListOrNull()!!
 
 private fun RawRequest.validateYearsSearchIn() = years
-    .filter { it > Year.now().value || it < 1880 }
-    .let { wrongYears ->
-        validator(
-            toCheck = years,
-            invalidWhen = { wrongYears.isNotEmpty() },
-            transformer = { ys -> ys.map { YS(it) }.toSet() },
-            cause = {
-                ValidationError.OutOfBoundYear("Year validation error.", wrongYears.map { YS(it) }.nonEmptyListToNel())
-            }
-        )
+    .map { s ->
+        when (val i = Either.catch { s.toInt() }) {
+            is Either.Right -> i
+            is Either.Left -> s.left()
+        }
+    } // mapOrAccumulate
+    .let { yearsList ->
+        val cannotConvert = yearsList.mapNotNull { it.leftOrNull() }
+        if (cannotConvert.isNotEmpty()) {
+            ValidationError.InvalidInteger("Malformed number(s).", cannotConvert.nonEmptyListToNel()).leftNel()
+        } else {
+            validator(
+                toCheck = yearsList,
+                invalidWhen = {
+                    yearsList.map { it.getOrNull()!! }.any { it > Year.now().value || it < 1880 }
+                },
+                transformer = { ys -> ys.map { YS(it.getOrNull()!!) }.toSet() },
+                cause = {
+                    ValidationError.OutOfBoundYear(
+                        "Year validation error.",
+                        yearsList
+                            .map { it.getOrNull()!! }
+                            .filter { it > Year.now().value || it < 1880 }
+                            .map { YS(it) }
+                            .nonEmptyListToNel()
+                    )
+                }
+            )
+        }
     }
 
 private fun RawRequest.validateGenres() = genres
     .map { gs ->
-        when (val e = Either.catch { Genre.valueOf(gs) }) {
+        // Locale.getDefault() usage is error-prone -> with further specification, character set can be agreed on.
+        when (val e = Either.catch { Genre.valueOf(gs.uppercase(Locale.getDefault())) }) {
             is Either.Right -> e
             is Either.Left -> gs.left()
         }
-    }.let { maybeGenres ->
+    }
+    .let { maybeGenres ->
         validator(
             toCheck = genres,
             invalidWhen = { maybeGenres.any { it.isLeft() } },
@@ -44,7 +67,7 @@ private fun RawRequest.validateGenres() = genres
             cause = {
                 ValidationError.InvalidGenre(
                     "Genre validation error.",
-                    maybeGenres.map { it.leftOrNull() }.filterNotNull().nonEmptyListToNel()
+                    maybeGenres.mapNotNull { it.leftOrNull() }.nonEmptyListToNel()
                 )
             }
         )
@@ -52,7 +75,7 @@ private fun RawRequest.validateGenres() = genres
 
 private fun RawRequest.validateMovieNames() = names
     .map {
-        when (it.matches(Regex("^[a-zA-Z0-9\\s]*$"))) {
+        when (it.matches(Regex("^[a-zA-Z0-9'&_.!?\\s]*$"))) {
             true -> it.right()
             false -> it.left()
         }
@@ -65,7 +88,7 @@ private fun RawRequest.validateMovieNames() = names
             cause = {
                 ValidationError.InvalidMovieName(
                     "Movie name validation error.",
-                    maybeName.map { it.leftOrNull() }.filterNotNull().nonEmptyListToNel()
+                    maybeName.mapNotNull { it.leftOrNull() }.nonEmptyListToNel()
                 )
             }
         )
@@ -73,7 +96,7 @@ private fun RawRequest.validateMovieNames() = names
 
 private fun RawRequest.validateCastMembers() = casts
     .map {
-        when (it.matches(Regex("^[A-Za-z][A-Za-z0-9_]{7,29}$"))) {
+        when (it.matches(Regex("^[a-zA-Z_\\s]{3,40}$"))) {
             true -> it.right()
             false -> it.left()
         }
@@ -85,19 +108,18 @@ private fun RawRequest.validateCastMembers() = casts
             transformer = { maybeMember.map { CastMember(it.getOrNull()!!) }.toSet() },
             cause = {
                 ValidationError.InvalidCastMember(
-                    "",
-                    maybeMember.map { it.leftOrNull() }.filterNotNull().nonEmptyListToNel()
+                    "Cast name is too long, or contains not allowed characters.",
+                    maybeMember.mapNotNull { it.leftOrNull() }.nonEmptyListToNel()
                 )
             }
         )
     }
 
-fun RawRequest.validate(): EitherNel<ValidationError, ValidatedRequest> =
-    either {
-        ValidatedRequest(
-            validateYearsSearchIn().bind(),
-            validateMovieNames().bind(),
-            validateCastMembers().bind(),
-            validateGenres().bind()
-        )
-    }
+fun RawRequest.validate(): EitherNel<ValidationError, ValidatedRequest> = either {
+    ValidatedRequest(
+        validateYearsSearchIn().bind(),
+        validateMovieNames().bind(),
+        validateCastMembers().bind(),
+        validateGenres().bind()
+    )
+}

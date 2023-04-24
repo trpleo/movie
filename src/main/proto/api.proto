@@ -39,14 +39,20 @@ message Error {
   message ValidationErrorProto {
     oneof types {
       OutOfBoundYearProto outOfBoundYear = 1;
-      InvalidGenreProto invalidGenre = 2;
-      InvalidMovieNameProto invalidMovieName = 3;
-      InvalidCastMemberProto invalidCastMember = 4;
+      InvalidIntegerProto invalidInteger = 2;
+      InvalidGenreProto invalidGenre = 3;
+      InvalidMovieNameProto invalidMovieName = 4;
+      InvalidCastMemberProto invalidCastMember = 5;
     }
 
     message OutOfBoundYearProto {
       string cause = 1;
       repeated int32 invalidYears = 2;
+    }
+
+    message InvalidIntegerProto {
+      string cause = 1;
+      repeated string invalidYears = 2;
     }
 
     message InvalidGenreProto {

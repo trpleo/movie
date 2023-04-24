@@ -9,6 +9,8 @@ sealed interface ValidationError : Error {
 
     data class OutOfBoundYear(override val cause: String, val invalidYears: Nel<Year>) : ValidationError
 
+    data class InvalidInteger(override val cause: String, val invalidYears: Nel<String>): ValidationError
+
     data class InvalidGenre(override val cause: String, val invalidGenres: Nel<String>) : ValidationError
 
     data class InvalidMovieName(override val cause: String, val invalidNames: Nel<String>) : ValidationError
