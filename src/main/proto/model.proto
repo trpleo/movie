@@ -2,7 +2,7 @@ syntax = "proto3";
 package jpm.movie.model.v1;
 
 option java_multiple_files = true;
-option java_package = "jpm.movie.model.v1.proto.generated";
+option java_package = "jpm.movie.model.proto";
 
 message YearProto {
   int32 year = 1;
@@ -16,49 +16,47 @@ message CastMemberProto {
   string name = 1;
 }
 
-message GenreProto {
-  enum Genre {
-      ACTION = 0;
-      ADVENTURE = 1;
-      ANIMATED = 2;
-      BIOGRAPHY = 3;
-      COMEDY = 4;
-      CRIME = 5;
-      DANCE = 6;
-      DISASTER = 7;
-      DOCUMENTARY = 8;
-      DRAMA = 9;
-      EROTIC = 10;
-      FAMILY = 11;
-      FANTASY = 12;
-      FOUND_FOOTAGE = 13;
-      HISTORICAL = 14;
-      HORROR = 15;
-      INDEPENDENT = 16;
-      LEGAL = 17;
-      LIVE_ACTION = 18;
-      MARTIAL_ARTS = 19;
-      MUSICAL = 20;
-      MYSTERY = 21;
-      NOIR = 22;
-      PERFORMANCE = 23;
-      POLITICAL = 24;
-      ROMANCE = 25;
-      SATIRE = 26;
-      SCIENCE_FICTION = 27;
-      SHORT = 28;
-      SILENT = 29;
-      SLASHER = 30;
-      SPORTS = 31;
-      SPY = 32;
-      SUPERHERO = 33;
-      SUPERNATURAL = 34;
-      SUSPENSE = 35;
-      TEEN = 36;
-      THRILLER = 37;
-      WAR = 38;
-      WESTERN = 39;
-  }
+enum GenreProto {
+    ACTION = 0;
+    ADVENTURE = 1;
+    ANIMATED = 2;
+    BIOGRAPHY = 3;
+    COMEDY = 4;
+    CRIME = 5;
+    DANCE = 6;
+    DISASTER = 7;
+    DOCUMENTARY = 8;
+    DRAMA = 9;
+    EROTIC = 10;
+    FAMILY = 11;
+    FANTASY = 12;
+    FOUND_FOOTAGE = 13;
+    HISTORICAL = 14;
+    HORROR = 15;
+    INDEPENDENT = 16;
+    LEGAL = 17;
+    LIVE_ACTION = 18;
+    MARTIAL_ARTS = 19;
+    MUSICAL = 20;
+    MYSTERY = 21;
+    NOIR = 22;
+    PERFORMANCE = 23;
+    POLITICAL = 24;
+    ROMANCE = 25;
+    SATIRE = 26;
+    SCIENCE_FICTION = 27;
+    SHORT = 28;
+    SILENT = 29;
+    SLASHER = 30;
+    SPORTS = 31;
+    SPY = 32;
+    SUPERHERO = 33;
+    SUPERNATURAL = 34;
+    SUSPENSE = 35;
+    TEEN = 36;
+    THRILLER = 37;
+    WAR = 38;
+    WESTERN = 39;
 }
 
 message MovieProto {

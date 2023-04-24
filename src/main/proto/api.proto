@@ -2,17 +2,38 @@ syntax = "proto3";
 package jpm.movie.model.v1;
 
 option java_multiple_files = true;
-option java_package = "jpm.movie.model.v1.proto.generated";
+option java_package = "jpm.movie.model.proto";
 
 import "model.proto";
 
-/** REQUESTS */
+message ApiMessageProto {
+  oneof types {
+    MovieRequestProto movieRequest = 1;
+    MovieResponseProto movieResponse = 2;
+  }
 
-message RawRequestProto {
-  repeated int32 years = 1;
-  repeated string names = 2;
-  repeated string casts = 3;
-  repeated string genres = 4;
+  /** REQUESTS */
+
+  message MovieRequestProto {
+    oneof types {
+      RawRequestProto rawRequestProto = 1;
+      ValidatedRequestProto validatedRequestProto = 2;
+    }
+
+    message RawRequestProto {
+      repeated string years = 1;
+      repeated string names = 2;
+      repeated string casts = 3;
+      repeated string genres = 4;
+    }
+
+    message ValidatedRequestProto {
+      repeated YearProto years = 1;
+      repeated MovieNameProto names = 2;
+      repeated CastMemberProto casts = 3;
+      repeated GenreProto genres = 4;
+    }
+  }
 }
 
 /** RESPONSES */
@@ -22,18 +43,24 @@ message MovieResponseProto {
     QueryResultProto success = 1;
     RequestFailureProto failure = 2;
   }
+
+  /** RESPONSES / SUCCESSES */
+
+  message QueryResultProto {
+    repeated MovieProto movies = 1;
+  }
+
+  /** RESPONSES / FAILURES */
+
+  message RequestFailureProto {
+    repeated ErrorProto errors = 1;
+  }
 }
 
-/** RESPONSES / SUCCESSES */
-
-message QueryResultProto {
-  repeated MovieProto movies = 1;
-}
-
-/** RESPONSES / FAILURES */
-message Error {
+message ErrorProto {
   oneof types {
     ValidationErrorProto validationError = 1;
+    GeneralErrorProto generalError = 2;
   }
 
   message ValidationErrorProto {
@@ -70,8 +97,8 @@ message Error {
       repeated string invalidNames = 2;
     }
   }
-}
 
-message RequestFailureProto {
-  repeated Error errors = 1;
+  message GeneralErrorProto {
+    string cause = 1;
+  }
 }

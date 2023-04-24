@@ -12,6 +12,7 @@ import io.ktor.server.routing.routing
 import java.time.Instant
 import java.util.logging.Logger
 import jpm.movie.Log
+import jpm.movie.model.Codecs
 import jpm.movie.model.RawRequest
 
 /**
@@ -22,7 +23,7 @@ class HttpApiImpl @Inject constructor(
     private val httpConfig: HttpApiConfig,
     private val queryService: QueryService,
     @Log private val logger: Logger,
-) : HttpApi, Service {
+) : HttpApi, Service, Codecs {
 
     private var applicationEngine: NettyApplicationEngine? = null
 
@@ -47,7 +48,7 @@ class HttpApiImpl @Inject constructor(
 
                     queryService.queryMovies(RawRequest(years, movieNames, castMember, genres))
                         .also { logger.info { "Response: [$it]" } }
-                        .let { call.respondText(it.toString()) }
+                        .let { call.respondText(it.toProtoJson()) }
                 }
             }
         }.start(wait = true)
