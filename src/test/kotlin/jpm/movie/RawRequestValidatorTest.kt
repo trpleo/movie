@@ -1,8 +1,19 @@
 package jpm.movie
 
+import arrow.core.Either
+import arrow.core.Either.Companion.zipOrAccumulate
+import arrow.core.flatMap
+import arrow.core.invalid
+import arrow.core.invalidNel
+import arrow.core.left
 import arrow.core.leftNel
 import arrow.core.nel
+import arrow.core.raise.either
 import arrow.core.right
+import arrow.core.toNonEmptyListOrNull
+import arrow.core.valid
+import arrow.core.zip
+import io.kotest.core.Tuple2
 import io.kotest.matchers.shouldBe
 import jpm.movie.core.validators.validate
 import jpm.movie.model.CastMember
@@ -12,6 +23,7 @@ import jpm.movie.model.RawRequest
 import jpm.movie.model.ValidatedRequest
 import jpm.movie.model.ValidationError
 import jpm.movie.model.Year
+import org.checkerframework.checker.units.qual.s
 import org.junit.jupiter.api.Test
 
 class RawRequestValidatorTest {
@@ -146,5 +158,24 @@ class RawRequestValidatorTest {
             emptySet(),
             setOf(Genre.DRAMA, Genre.EROTIC, Genre.FAMILY, Genre.FANTASY)
         ).right()
+    }
+
+    @Test
+    fun `should return complex error`() {
+        val request = RawRequest(
+            years = setOf("1850", "2030", "2020"),
+            names = setOf("99!"),
+            casts = setOf(),
+            genres = setOf("Dramá")
+        )
+
+        val validated = request.validate()
+
+        validated shouldBe ValidationError.OutOfBoundYear(
+            "Year validation error.",
+            setOf(Year(1850), Year(2030)).toNonEmptyListOrNull()!!
+        ).nel().plus(
+            ValidationError.InvalidGenre("Genre validation error.", "Dramá".nel())
+        ).left()
     }
 }
