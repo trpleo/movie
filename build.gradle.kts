@@ -51,6 +51,7 @@ dependencies {
 
     // test
     testImplementation(kotlin("test"))
+    testImplementation("io.kotest:kotest-runner-junit5:5.6.1")
 }
 
 tasks.test {
