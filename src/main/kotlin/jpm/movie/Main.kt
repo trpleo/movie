@@ -4,6 +4,7 @@ import com.google.inject.Guice
 import com.google.inject.Injector
 import jpm.movie.core.HttpApi
 import jpm.movie.core.HttpApiConfig
+import jpm.movie.core.QueryService
 
 //val REGION = "us-west-2"
 //val BUCKET = "bucket-${UUID.randomUUID()}"

@@ -13,9 +13,10 @@ import jpm.movie.model.RequestFailure
 import jpm.movie.model.ValidatedRequest
 
 @Singleton
-sealed class QueryServiceImpl @Inject constructor(@Log private val logger: Logger) : QueryService {
+class QueryServiceImpl @Inject constructor(@Log private val logger: Logger) : QueryService {
 
     private fun seekMovies(validatedRq: ValidatedRequest): Set<Movie> {
+        logger.info("Seeking movies [$validatedRq]")
         return emptySet()
     }
 

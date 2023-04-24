@@ -12,6 +12,7 @@ import io.ktor.server.routing.routing
 import java.time.Instant
 import java.util.logging.Logger
 import jpm.movie.Log
+import jpm.movie.model.RawRequest
 
 /**
  * Embedded Http server, that provides the APIs the service can be called.
@@ -19,7 +20,7 @@ import jpm.movie.Log
 @Singleton
 class HttpApiImpl @Inject constructor(
     private val httpConfig: HttpApiConfig,
-//    @Inject private val queryService: QueryService,
+    private val queryService: QueryService,
     @Log private val logger: Logger,
 ) : HttpApi, Service {
 
@@ -37,12 +38,16 @@ class HttpApiImpl @Inject constructor(
                     call.respondText(Instant.now().toEpochMilli().toString())
                 }
                 get("/movies") {
-                    val years = call.request.queryParameters["years"]
-                    val movieNames = call.request.queryParameters["titles"]
-                    val castMember = call.request.queryParameters["cast"]
-                    val genres = call.request.queryParameters["genres"]
+                    val years = call.request.queryParameters["years"]?.split(",")?.toSet() ?: emptySet()
+                    val movieNames = call.request.queryParameters["titles"]?.split(",")?.toSet() ?: emptySet()
+                    val castMember = call.request.queryParameters["cast"]?.split(",")?.toSet() ?: emptySet()
+                    val genres = call.request.queryParameters["genres"]?.split(",")?.toSet() ?: emptySet()
 
                     logger.info("years: [$years]; movies: [$movieNames]; cast: [$castMember]; genres: [$genres]")
+
+                    queryService.queryMovies(RawRequest(years, movieNames, castMember, genres))
+                        .also { logger.info { "Response: [$it]" } }
+                        .let { call.respondText(it.toString()) }
                 }
             }
         }.start(wait = true)

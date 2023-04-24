@@ -6,7 +6,7 @@ package jpm.movie.model
 sealed interface MovieRequest
 
 data class RawRequest(
-    val years: Set<Int>,
+    val years: Set<String>,
     val names: Set<String>,
     val casts: Set<String>,
     val genres: Set<String>,

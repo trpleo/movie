@@ -15,7 +15,7 @@ class MovieSvcModule(private val config: MovieSvcConfig) : BindingUtil() {
     }
 
     private fun bindHttpApi() {
-//        bind<QueryService>().to<QueryServiceImpl>()
+        bind<QueryService>().to<QueryServiceImpl>()
         bind<HttpApi>().to<HttpApiImpl>()
     }
 
