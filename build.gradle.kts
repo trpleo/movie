@@ -37,6 +37,7 @@ dependencies {
     api("io.grpc:grpc-stub:1.53.0")
     api("io.grpc:grpc-kotlin-stub:1.3.0")
     api("com.google.protobuf:protobuf-kotlin:3.22.2")
+    api("com.google.protobuf:protobuf-java-util:3.22.3")
 
     // ktor
     implementation("io.ktor:ktor-server-core")
@@ -68,6 +69,19 @@ tasks.processResources {
 
 java {
     sourceSets.getByName("main").resources.srcDir("src/main/proto")
+    sourceCompatibility = JavaVersion.VERSION_1_8
+    targetCompatibility = JavaVersion.VERSION_1_8
+}
+// Inform IDEs like IntelliJ IDEA, Eclipse or NetBeans about the generated code.
+sourceSets {
+    main {
+        java {
+            srcDirs ("build/generated/source/proto/main/grpc")
+            srcDirs ("build/generated/source/proto/main/java")
+            srcDirs ("build/generated/source/proto/main/grpckt")
+            srcDirs ("build/generated/source/proto/main/kotlin")
+        }
+    }
 }
 
 application {
