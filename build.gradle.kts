@@ -7,7 +7,7 @@ import org.gradle.api.attributes.Usage.USAGE_ATTRIBUTE
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
-    kotlin("jvm") version "1.8.20"
+    kotlin("jvm") version "1.8.21"
     id("com.google.protobuf") version "0.8.19"
     id("io.ktor.plugin") version "2.3.0"
     application
@@ -69,6 +69,11 @@ dependencies {
     testImplementation(kotlin("test"))
     testImplementation("io.kotest:kotest-runner-junit5:5.6.1")
 //    testImplementation("org.junit.jupiter:junit-jupiter:5.9.2")
+
+    // DB
+    implementation("org.flywaydb:flyway-core:9.16.0")
+    implementation("org.postgresql:postgresql:42.5.4")
+    implementation("com.zaxxer:HikariCP:3.4.5")
 }
 
 tasks.test {
