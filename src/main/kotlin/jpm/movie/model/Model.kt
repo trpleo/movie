@@ -53,8 +53,8 @@ enum class Genre {
 }
 
 data class Movie(
-    val year: Year,
-    val name: MovieName,
-    val cast: Set<CastMember>,
-    val genre: Set<Genre>
+    val year: Year?,
+    val name: MovieName?,
+    val cast: Set<CastMember>?,
+    val genre: Set<Genre>?
 )

@@ -47,10 +47,10 @@ interface Codecs {
     fun MovieResponseProto.QueryResultProto.fromProto() = QueryResult(moviesList.map { it.fromProto() }.toSet())
 
     fun Movie.toProto(): MovieProto = MovieProto.newBuilder()
-        .setYear(year.toProto())
-        .setName(name.toProto())
-        .addAllCast(cast.map { it.toProto() })
-        .addAllGenre(genre.map { it.toProto() })
+        .setYear(year?.toProto())
+        .setName(name?.toProto())
+        .addAllCast(cast?.map { it.toProto() })
+        .addAllGenre(genre?.map { it.toProto() })
         .build()
 
     fun MovieProto.fromProto() = Movie(
@@ -213,6 +213,7 @@ interface Codecs {
             is ValidationError.InvalidInteger -> builder.invalidInteger = toProto()
             is ValidationError.InvalidMovieName -> builder.invalidMovieName = toProto()
             is ValidationError.OutOfBoundYear -> builder.outOfBoundYear = toProto()
+            is ValidationError.DataProviderError -> builder.dataProviderError = toProto()
         }
         builder
     }.build()
@@ -223,6 +224,7 @@ interface Codecs {
         ValidationErrorProto.TypesCase.INVALIDMOVIENAME -> invalidMovieName.fromProto()
         ValidationErrorProto.TypesCase.INVALIDCASTMEMBER -> invalidCastMember.fromProto()
         ValidationErrorProto.TypesCase.INVALIDGENRE -> invalidGenre.fromProto()
+        ValidationErrorProto.TypesCase.DATAPROVIDERERROR -> dataProviderError.fromProto()
 
         ValidationErrorProto.TypesCase.TYPES_NOT_SET, null -> throw RuntimeException("unrecognized proto message")
     }
@@ -254,6 +256,11 @@ interface Codecs {
 
     fun OutOfBoundYearProto.fromProto() =
         ValidationError.OutOfBoundYear(cause, invalidYearsList.fromProtoAsNel { Year(it) })
+
+    fun ValidationError.DataProviderError.toProto(): ValidationErrorProto.DataProviderErrorProto =
+        ValidationErrorProto.DataProviderErrorProto.newBuilder().setCause(cause).build()
+
+    fun ValidationErrorProto.DataProviderErrorProto.fromProto() = ValidationError.DataProviderError(cause)
 
     /** Response Serializers */
 

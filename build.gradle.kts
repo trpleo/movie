@@ -23,10 +23,25 @@ repositories {
 dependencies {
 
     // AWS
-    implementation("aws.sdk.kotlin:s3:0.17.5-beta")
+    implementation("aws.sdk.kotlin:s3:0.18.0-beta")
 
     implementation("aws.sdk.kotlin:sso:0.19.2-beta")
     implementation("aws.sdk.kotlin:ssooidc:0.19.2-beta")
+
+    implementation("aws.sdk.kotlin:dynamodb:0.18.0-beta")
+    implementation("aws.sdk.kotlin:iam:0.18.0-beta")
+    implementation("aws.sdk.kotlin:cloudwatch:0.18.0-beta")
+    implementation("aws.sdk.kotlin:cognitoidentityprovider:0.18.0-beta")
+    implementation("aws.sdk.kotlin:sns:0.18.0-beta")
+    implementation("aws.sdk.kotlin:pinpoint:0.18.0-beta")
+
+    implementation("com.amazonaws:aws-java-sdk-sqs:1.12.454")
+
+    implementation("aws.sdk.kotlin:sqs-jvm:0.21.3-beta")
+
+    // kotlin
+//    implementation(kotlin("reflect"))
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.4")
 
     // FP
     implementation("io.arrow-kt:arrow-core:1.2.0-RC")
@@ -53,6 +68,7 @@ dependencies {
     // test
     testImplementation(kotlin("test"))
     testImplementation("io.kotest:kotest-runner-junit5:5.6.1")
+//    testImplementation("org.junit.jupiter:junit-jupiter:5.9.2")
 }
 
 tasks.test {

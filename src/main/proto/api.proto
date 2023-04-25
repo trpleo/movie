@@ -70,6 +70,7 @@ message ErrorProto {
       InvalidGenreProto invalidGenre = 3;
       InvalidMovieNameProto invalidMovieName = 4;
       InvalidCastMemberProto invalidCastMember = 5;
+      DataProviderErrorProto dataProviderError = 6;
     }
 
     message OutOfBoundYearProto {
@@ -95,6 +96,10 @@ message ErrorProto {
     message InvalidCastMemberProto {
       string cause = 1;
       repeated string invalidNames = 2;
+    }
+
+    message DataProviderErrorProto {
+      string cause = 1;
     }
   }
 

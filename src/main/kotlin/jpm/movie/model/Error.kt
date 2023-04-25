@@ -16,6 +16,8 @@ sealed interface ValidationError : Error {
     data class InvalidMovieName(override val cause: String, val invalidNames: Nel<String>) : ValidationError
 
     data class InvalidCastMember(override val cause: String, val invalidNames: Nel<String>) : ValidationError
+
+    data class DataProviderError(override val cause: String): ValidationError
 }
 
 data class GeneralError(val cause: String): Error

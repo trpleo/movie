@@ -4,29 +4,21 @@ import arrow.core.Either
 import arrow.core.EitherNel
 import arrow.core.left
 import arrow.core.leftNel
-import arrow.core.raise.either
 import arrow.core.right
-import arrow.core.toNonEmptyListOrNull
 import java.util.Locale
 import jpm.movie.model.CastMember
 import jpm.movie.model.Genre
 import jpm.movie.model.MovieName
-import jpm.movie.model.RawRequest
-import jpm.movie.model.ValidatedRequest
 import jpm.movie.model.ValidationError
 import jpm.movie.model.Year
-import java.time.Year as JYear
-import arrow.core.Either.Companion.zipOrAccumulate
 
-fun <T> List<T>.nonEmptyListToNel() = this.toNonEmptyListOrNull()!!
-
-private fun RawRequest.validateYearsSearchIn(): EitherNel<ValidationError, Set<Year>> = years
+internal fun Set<String>.validateForYearsSearchIn(): EitherNel<ValidationError, Set<Year>> = this
     .map { s ->
         when (val i = Either.catch { s.toInt() }) {
             is Either.Right -> i
             is Either.Left -> s.left()
         }
-    } // mapOrAccumulate
+    }
     .let { yearsList ->
         val cannotConvert = yearsList.mapNotNull { it.leftOrNull() }
         if (cannotConvert.isNotEmpty()) {
@@ -35,7 +27,7 @@ private fun RawRequest.validateYearsSearchIn(): EitherNel<ValidationError, Set<Y
             validator(
                 toCheck = yearsList,
                 invalidWhen = {
-                    yearsList.map { it.getOrNull()!! }.any { it > JYear.now().value || it < 1880 }
+                    yearsList.map { it.getOrNull()!! }.any { it > java.time.Year.now().value || it < 1880 }
                 },
                 transformer = { ys -> ys.map { Year(it.getOrNull()!!) }.toSet() },
                 cause = {
@@ -43,7 +35,7 @@ private fun RawRequest.validateYearsSearchIn(): EitherNel<ValidationError, Set<Y
                         "Year validation error.",
                         yearsList
                             .map { it.getOrNull()!! }
-                            .filter { it > JYear.now().value || it < 1880 }
+                            .filter { it > java.time.Year.now().value || it < 1880 }
                             .map { Year(it) }
                             .nonEmptyListToNel()
                     )
@@ -52,7 +44,7 @@ private fun RawRequest.validateYearsSearchIn(): EitherNel<ValidationError, Set<Y
         }
     }
 
-private fun RawRequest.validateGenres() = genres
+internal fun Set<String>.validateForGenres() = this
     .map { gs ->
         // Locale.getDefault() usage is error-prone -> with further specification, character set can be agreed on.
         when (val e = Either.catch { Genre.valueOf(gs.uppercase(Locale.getDefault())) }) {
@@ -62,7 +54,7 @@ private fun RawRequest.validateGenres() = genres
     }
     .let { maybeGenres ->
         validator(
-            toCheck = genres,
+            toCheck = this,
             invalidWhen = { maybeGenres.any { it.isLeft() } },
             transformer = { maybeGenres.map { it.getOrNull()!! }.toSet() },
             cause = {
@@ -74,16 +66,16 @@ private fun RawRequest.validateGenres() = genres
         )
     }
 
-private fun RawRequest.validateMovieNames() = names
+internal fun Set<String>.validateForMovieNames() = this
     .map {
-        when (it.matches(Regex("^[a-zA-Z0-9'&_.!?\\s]*$"))) {
+        when (it.matches(Regex("^[a-zA-Z0-9'&_.!?:\\s]*$"))) {
             true -> it.right()
             false -> it.left()
         }
     }
     .let { maybeName ->
         validator(
-            toCheck = names,
+            toCheck = this,
             invalidWhen = { maybeName.any { it.isLeft() } },
             transformer = { maybeName.map { MovieName(it.getOrNull()!!) }.toSet() },
             cause = {
@@ -95,16 +87,16 @@ private fun RawRequest.validateMovieNames() = names
         )
     }
 
-private fun RawRequest.validateCastMembers() = casts
+internal fun Set<String>.validateForCastMembers() = this
     .map {
-        when (it.matches(Regex("^[a-zA-Z_\\s]{3,40}$"))) {
+        when (it.matches(Regex("""^[_.\-\s\p{L}]{3,40}$"""))) {
             true -> it.right()
             false -> it.left()
         }
     }
     .let { maybeMember ->
         validator(
-            toCheck = casts,
+            toCheck = this,
             invalidWhen = { maybeMember.any { it.isLeft() } },
             transformer = { maybeMember.map { CastMember(it.getOrNull()!!) }.toSet() },
             cause = {
@@ -115,12 +107,3 @@ private fun RawRequest.validateCastMembers() = casts
             }
         )
     }
-
-fun RawRequest.validate(): EitherNel<ValidationError, ValidatedRequest> =
-    zipOrAccumulate(
-        validateYearsSearchIn(),
-        validateMovieNames(),
-        validateCastMembers(),
-        validateGenres()
-    ) { y, m, c, g -> ValidatedRequest(y, m, c, g) }
-
