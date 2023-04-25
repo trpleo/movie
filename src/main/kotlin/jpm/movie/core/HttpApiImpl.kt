@@ -1,14 +1,15 @@
 package jpm.movie.core
 
-import arrow.core.EitherNel
-import aws.smithy.kotlin.runtime.http.HttpBody.Empty.contentLength
 import com.google.inject.Inject
 import com.google.inject.Singleton
+import io.ktor.http.ContentType
+import io.ktor.http.HttpHeaders
+import io.ktor.http.HttpStatusCode
 import io.ktor.server.application.call
 import io.ktor.server.engine.embeddedServer
 import io.ktor.server.netty.Netty
 import io.ktor.server.netty.NettyApplicationEngine
-import io.ktor.server.response.header
+import io.ktor.server.request.header
 import io.ktor.server.response.respondText
 import io.ktor.server.routing.get
 import io.ktor.server.routing.routing
@@ -16,17 +17,9 @@ import java.time.Instant
 import java.util.logging.Logger
 import jpm.movie.Log
 import jpm.movie.model.Codecs
-import jpm.movie.model.RawRequest
-import io.ktor.server.application.*
-import io.ktor.http.*
-import io.ktor.server.request.header
-//import io.ktor.server.plugins.autohead.*
-//import io.ktor.server.plugins.partialcontent.*
-import io.ktor.server.response.*
-import io.ktor.server.routing.*
-import java.io.File
 import jpm.movie.model.MovieResponse
 import jpm.movie.model.QueryResult
+import jpm.movie.model.RawRequest
 import jpm.movie.model.RequestFailure
 import jpm.movie.model.ValidationError
 

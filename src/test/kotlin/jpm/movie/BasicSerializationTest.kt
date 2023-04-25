@@ -4,7 +4,6 @@ import arrow.core.nel
 import io.kotest.matchers.shouldBe
 import jpm.movie.model.CastMember
 import jpm.movie.model.Codecs
-import jpm.movie.model.Error
 import jpm.movie.model.Genre
 import jpm.movie.model.Movie
 import jpm.movie.model.MovieName
