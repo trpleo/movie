@@ -62,6 +62,20 @@ Following the KISS principle and considering the time it has to be delivered:
 
 ### Architecture
 
+#### API definition / HTTP
+
+The service has only one API, that is defined by the delivery team: the query API.
+
+The query is an HTTP API, open to changed to gRPC easily.
+The query can be send through the `/movies` endpoint, whit query parameters.
+4 query parameter can be added, in arbitrary order:
+- years: int values between 1880 and now; separated by `,` character.
+- titles: string values separated by `,` character.
+- cast: string values separated by `,` character.
+- genres: provided genres as strings, separated by `,` character.
+
+The response can be either a Success or a Failure, that is described in the body and the response code.
+
 #### Solution Architecture
 
 The main components are:
@@ -108,3 +122,18 @@ The uptime of the query interface - therefore the Movie Service - can be as good
 There are a few parameters, that should be measure over time, but as a first estimation (H0) it is the DB's uptime.
 
 Further parameters, MTBF (mean time between failures) can be measured in production.
+
+# Known issues
+
+- Application shutdown: currently there's no mechanism to stop the Http thread.
+- RESTful API: 
+  - the API right now only the query API, and therefore `If-Match` `If-None-Match` and `ETag` is not handled.
+  - response codes does not necessary reflects the errors.
+  - no popular content type supporting (like XML)
+  - no API versioning.
+  - no Authorization.
+  - HTTP spec version 6[RFC3513] and later allows '\[' and '\]' characters in the URL, that is not used.
+  - parameters arguably can be changed to payload (body) - system is prepared, but not implemented.
+- Healthcheck: the healthcheck does not really reflects the readiness of the application.
+- Thread Pooling: separated context for the IO operations (especially for the different type of the IO operations) would be necessary for production.
+- 
