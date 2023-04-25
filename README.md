@@ -141,4 +141,4 @@ Further parameters, MTBF (mean time between failures) can be measured in product
   - parameters arguably can be changed to payload (body) - system is prepared, but not implemented.
 - Healthcheck: the healthcheck does not really reflects the readiness of the application.
 - Thread Pooling: separated context for the IO operations (especially for the different type of the IO operations) would be necessary for production.
-- 
+- Service(s) start-up is not fault tolerant
