@@ -68,6 +68,9 @@ The service has only one API, that is defined by the delivery team: the query AP
 
 The query is an HTTP API, open to changed to gRPC easily.
 The query can be send through the `/movies` endpoint, whit query parameters.
+There are three different ways to send a query to a service through HTTP request: Path, Body, Query.
+Path has been chosen, because of simplicity, however, the solution is open for requests in the Body.
+
 4 query parameter can be added, in arbitrary order:
 - years: int values between 1880 and now; separated by `,` character.
 - titles: string values separated by `,` character.
@@ -84,6 +87,8 @@ The main components are:
 - Movie Svc: the service itself,
 - PostgreSQL: SQL DB for PoC,
 - Kubernetes: orchestration service. 
+
+The Movie Service expects the SQS queue is created (that has to be part of the configuration / set up of the system).
 
 #### Application Architecture
 
