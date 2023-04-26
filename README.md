@@ -128,7 +128,7 @@ There are a few parameters, that should be measure over time, but as a first est
 
 Further parameters, MTBF (mean time between failures) can be measured in production.
 
-# Known issues
+# Known issues / Tasks
 
 - Application shutdown: currently there's no mechanism to stop the Http thread.
 - RESTful API: 
@@ -142,3 +142,8 @@ Further parameters, MTBF (mean time between failures) can be measured in product
 - Healthcheck: the healthcheck does not really reflects the readiness of the application.
 - Thread Pooling: separated context for the IO operations (especially for the different type of the IO operations) would be necessary for production.
 - Service(s) start-up is not fault tolerant
+- Set up logging
+- Configure Kubernetes
+- Implement missing test cases with fixtures
+- Add Jooq support
+- Configure AWS environment S3 and SQS
