@@ -6,5 +6,5 @@ package jpm.movie.core
  */
 data class QueueBridgeConfig(
     val region: String = "us-east-1",
-    val queueUrlVal: String,
+    val queueUrlVal: String = "",
 )

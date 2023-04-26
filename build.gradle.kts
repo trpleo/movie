@@ -5,20 +5,48 @@ import com.google.protobuf.gradle.protobuf
 import com.google.protobuf.gradle.protoc
 import org.gradle.api.attributes.Usage.USAGE_ATTRIBUTE
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
+import org.jooq.codegen.GenerationTool
+import org.jooq.meta.jaxb.Configuration
+import org.jooq.meta.jaxb.Database
+import org.jooq.meta.jaxb.Generate
+import org.jooq.meta.jaxb.Generator
+import org.jooq.meta.jaxb.Jdbc
+import org.jooq.meta.jaxb.Target
 
 plugins {
     kotlin("jvm") version "1.8.21"
     id("com.google.protobuf") version "0.8.19"
     id("io.ktor.plugin") version "2.3.0"
     application
+
+    // jooq codegen
+    id("com.avast.gradle.docker-compose") version "0.16.12"
+    id("nu.studer.jooq") version "5.2.2"
+    id("org.flywaydb.flyway") version "9.8.1"
+    id("java")
+    id("java-library")
+
 }
 
 group = "jpm.movie"
 version = "1.0-SNAPSHOT"
 
 repositories {
+    mavenLocal()
     mavenCentral()
 }
+
+/** JOOQ Gen */
+buildscript {
+    repositories {
+        mavenCentral()
+    }
+    dependencies {
+        classpath("org.jooq:jooq-codegen:3.14.16")
+        classpath("org.postgresql:postgresql:42.5.4")
+    }
+}
+/** JOOQ Gen */
 
 dependencies {
 
@@ -68,12 +96,17 @@ dependencies {
     // test
     testImplementation(kotlin("test"))
     testImplementation("io.kotest:kotest-runner-junit5:5.6.1")
-//    testImplementation("org.junit.jupiter:junit-jupiter:5.9.2")
 
     // DB
     implementation("org.flywaydb:flyway-core:9.16.0")
     implementation("org.postgresql:postgresql:42.5.4")
     implementation("com.zaxxer:HikariCP:3.4.5")
+    // DB - jooq
+    implementation("org.jooq:jooq:3.14.16")
+    implementation("org.jooq:jooq-meta:3.14.16")
+    implementation("org.jooq:jooq-codegen:3.14.16")
+    jooqGenerator("org.postgresql:postgresql:42.5.4")
+    implementation("com.opentable.components:otj-pg-embedded:1.0.1")
 }
 
 tasks.test {
@@ -97,10 +130,10 @@ java {
 sourceSets {
     main {
         java {
-            srcDirs ("build/generated/source/proto/main/grpc")
-            srcDirs ("build/generated/source/proto/main/java")
-            srcDirs ("build/generated/source/proto/main/grpckt")
-            srcDirs ("build/generated/source/proto/main/kotlin")
+            srcDirs("build/generated/source/proto/main/grpc")
+            srcDirs("build/generated/source/proto/main/java")
+            srcDirs("build/generated/source/proto/main/grpckt")
+            srcDirs("build/generated/source/proto/main/kotlin")
         }
     }
 }
@@ -137,3 +170,53 @@ protobuf {
         }
     }
 }
+
+// jooq generator
+flyway {
+    url = "jdbc:postgresql://localhost:5433/moviedb"
+    user = "movieuser"
+    password = "qwe123"
+}
+
+tasks.create("generateJooq") {
+    GenerationTool.generate(
+        Configuration()
+            .withJdbc(
+                Jdbc()
+                    .withDriver("org.postgresql.Driver")
+                    .withUrl("jdbc:postgresql://localhost:5432/moviedb")
+                    /**
+                     * Alternatively: -Djooq.codegen.jdbc.user -Djooq.codegen.jdbc.password
+                     */
+                    .withUser("movieuser")
+                    .withPassword("qwe123")
+            )
+            .withGenerator(
+                Generator()
+                    .withDatabase(Database().withInputSchema("public"))
+                    .withGenerate(Generate())
+                    .withTarget(
+                        Target()
+                            .withPackageName("jpm.movie.db")
+                            .withDirectory("src/generated/jooq")
+                    )
+            )
+    )
+}
+
+//tasks.named("compileKotlin") {
+//    doFirst {
+//        //create embedded postgresql
+//        EmbeddedPostgres.builder().setPort(5400).start().use {
+//            //migrate embedded posrtgresql
+//            org.flywaydb.core.Flyway.configure()
+//                .locations("filesystem:$projectDir/migrations/")
+//                .schemas("public")
+//                .dataSource(it.postgresDatabase)
+//                .load()
+//                .migrate()
+//
+//            // here comes the GenerationTool section, after the PG is running
+//        }
+//    }
+//}

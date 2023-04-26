@@ -1,3 +1,3 @@
 package jpm.movie.core
 
-sealed interface DataProviderAPI
+sealed interface DataProvidersAPI

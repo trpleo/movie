@@ -147,3 +147,26 @@ Further parameters, MTBF (mean time between failures) can be measured in product
 - Implement missing test cases with fixtures
 - Add Jooq support
 - Configure AWS environment S3 and SQS
+
+#Test Run
+
+## Running
+```
+docker run --rm --name movie-pg -e POSTGRES_PASSWORD=qwe123 -e POSTGRES_USER=postgres -p 127.0.0.1:5432:5432 -d postgres
+docker exec -it movie-pg psql -U postgres -c "create user movieuser with encrypted password 'qwe123'"
+docker exec -it movie-pg psql -U postgres -c "CREATE DATABASE moviedb"
+docker exec -it movie-pg psql -U postgres -c "GRANT ALL PRIVILEGES ON DATABASE moviedb TO movieuser"
+./gradlew run
+```
+
+## Test queries
+
+Request error
+```
+curl -i -H "Accept: application/json" -H "Content-Type: application/json" -X GET http://localhost:8080/movies\?years\=1850\&titles\=morning%20sunshine,suits\&cast\=Harvy%20Spector,Mike%20Ross\&genres\=actioon
+```
+
+Query execution
+```
+curl -i -H "Accept: application/json" -H "Content-Type: application/json" -X GET http://localhost:8080/movies\?years\=1900\&titles\=morning%20sunshine,suits\&cast\=Harvy%20Spector,Mike%20Ross\&genres\=action
+```

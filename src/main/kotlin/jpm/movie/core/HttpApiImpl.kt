@@ -36,7 +36,7 @@ class HttpApiImpl @Inject constructor(
     private var applicationEngine: NettyApplicationEngine? = null
 
     init {
-        logger.info("Starting HTTP API...")
+        logger.info("HTTP API is up...")
         start()
     }
 
@@ -47,11 +47,11 @@ class HttpApiImpl @Inject constructor(
                     call.respondText(Instant.now().toEpochMilli().toString(), ContentType.Text.Plain, HttpStatusCode.OK)
                 }
                 get("/movies") {
-                    if (call.request.header(HttpHeaders.Accept) != "application/json")
-                    // Indicates that the response could not be processed by the client.
+                    if (call.request.header(HttpHeaders.Accept) != "application/json") {
+                        logger.info { "Indicates that the response could not be processed by the client." }
                         call.response.status(HttpStatusCode.NotAcceptable)
-                    else if (call.request.header(HttpHeaders.ContentType) != "application/json") {
-                        // Indicates the content type that is used in the body of the request is not supported
+                    } else if (call.request.header(HttpHeaders.ContentType) != "application/json") {
+                        logger.info { "Indicates the content type that is used in the body of the request is not supported." }
                         call.response.status(HttpStatusCode.BadRequest)
                     } else {
                         val years = call.request.queryParameters["years"]?.split(",")?.toSet() ?: emptySet()

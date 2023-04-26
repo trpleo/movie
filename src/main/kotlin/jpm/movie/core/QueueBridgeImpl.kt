@@ -3,6 +3,7 @@ package jpm.movie.core
 import arrow.core.Either
 import arrow.core.EitherNel
 import arrow.core.flatMap
+import arrow.core.nel
 import aws.sdk.kotlin.services.sqs.SqsClient
 import aws.sdk.kotlin.services.sqs.model.ReceiveMessageRequest
 import com.google.inject.Inject
@@ -13,11 +14,9 @@ import jpm.movie.Log
 import jpm.movie.core.validators.DataProviderMessage
 import jpm.movie.core.validators.validate
 import jpm.movie.model.Codecs
+import jpm.movie.model.GeneralError
 import jpm.movie.model.Movie
-import jpm.movie.model.QueryResult
-import jpm.movie.model.RawRequest
-import jpm.movie.model.RequestFailure
-import jpm.movie.model.ValidatedRequest
+import jpm.movie.model.MovieSvcError
 import jpm.movie.model.ValidationError
 import kotlin.coroutines.CoroutineContext
 import kotlinx.coroutines.CoroutineScope
@@ -26,41 +25,46 @@ import kotlinx.coroutines.launch
 class QueueBridgeImpl @Inject constructor(
     private val sqsConfig: QueueBridgeConfig,
     private val context: CoroutineContext,
-    private val db: DBBridge,
     @Log private val logger: Logger,
 ) : QueueBridge, Codecs {
 
     init {
-        CoroutineScope(context).launch {
-            receiveMessages(sqsConfig.region, sqsConfig.queueUrlVal)
-        }
+        logger.info { "Query Bridge starting with config [$sqsConfig]..." }
     }
 
-    private suspend fun receiveMessages(sqsRegion: String, queueUrlVal: String?) {
-
+    private suspend fun receiveMessages(
+        sqsRegion: String,
+        queueUrlVal: String?,
+        callback: (Movie) -> EitherNel<MovieSvcError, Movie>
+    ) {
         logger.info { "Retrieving messages from queue [$queueUrlVal] in [$sqsRegion] region." }
 
-        val receiveMessageRequest = ReceiveMessageRequest {
-            queueUrl = queueUrlVal
-            maxNumberOfMessages = 5
-        }
-
-        SqsClient { region = sqsRegion }.use { sqsClient ->
-            val response = sqsClient.receiveMessage(receiveMessageRequest)
-            response.messages?.forEach { message ->
-                Either.catch { message.body!! }
-                    .mapLeft { th -> logger.warning { "Empty message body. [${th.message}]" } }
-                    .map(::validateAndConvertMessage)
-
-                // todo: convert into db persistable
-                // todo: persist message
-                println(message.body)
+        suspend fun f(): EitherNel<MovieSvcError, Unit?> = EitherNel.catch {
+            val receiveMessageRequest = ReceiveMessageRequest {
+                queueUrl = queueUrlVal
+                maxNumberOfMessages = 5
             }
-        }
+
+            SqsClient { region = sqsRegion }.use { sqsClient ->
+                val response = sqsClient.receiveMessage(receiveMessageRequest)
+                response.messages?.forEach { message ->
+                    Either.catch { message.body!! }
+                        .mapLeft { ValidationError.DataProviderError("Empty message body. [${it.message}]").nel() }
+                        .flatMap(::validateAndConvertMessage)
+                        .mapLeft { logger.info { "Errors occurred during message validation [$it]" }; it }
+                        .flatMap(callback)
+                        .mapLeft { logger.info { "Errors occurred during persisting messages [$it]" }; it }
+                }
+            }
+        }.mapLeft { GeneralError("Error occurred during receiving messages. Cause [${it.message}]").nel() }
+
+        gradualErrorHandler(logger, Long.MAX_VALUE, ::f)
     }
 
-    override fun subscribe() {
-        TODO("Not yet implemented")
+    override fun subscribe(callback: (Movie) -> EitherNel<MovieSvcError, Movie>) {
+        CoroutineScope(context).launch {
+            receiveMessages(sqsConfig.region, sqsConfig.queueUrlVal, callback)
+        }
     }
 
     companion object {

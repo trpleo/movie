@@ -24,15 +24,16 @@ import org.jooq.impl.DSL
  * persistent DB, in order to make it searchable. This is the write side of the Movie Service.
  */
 @Singleton
-sealed class DataProviderService @Inject constructor(
+class DataProvidersService @Inject constructor(
     private val persistence: DBBridge,
     private val queue: QueueBridge,
     @Log private val logger: Logger,
-) : DataProviderAPI {
+) : DataProvidersAPI {
 
     init {
         initDatabase()
             .map { queue.subscribe(persistence::persistMovie) }
+            .map { logger.info { "Data Provider's API is up..." } }
     }
 
     companion object {
@@ -47,7 +48,7 @@ sealed class DataProviderService @Inject constructor(
 }
 
 fun main() {
-    DataProviderService.initDatabase()
+    DataProvidersService.initDatabase()
 }
 
 data class Actor(
