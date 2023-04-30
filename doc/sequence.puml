@@ -1,0 +1,23 @@
+@startuml
+'https://plantuml.com/sequence-diagram
+
+autonumber
+
+entity bucket as B
+queue SQS as Q
+participant "Data\nProvider Svc" as DPS
+database SQL as DB
+participant "Query Svc" as QS
+actor User as U
+
+=== Persist ==
+B -> Q: s3:ObjectCreated
+Q -> DPS: s3:ObjectCreated
+DPS -> DB: Movie
+
+=== Query ==
+U -> QS: /movie
+QS <- DB: Query
+QS --> U: [movie]
+
+@enduml

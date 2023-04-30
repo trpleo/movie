@@ -46,8 +46,8 @@ This opens the possibilities, since it is possible to choose a Key-Value store, 
 In case of a Key-Value store, based on the current requirements, and the potential number of records, even an in-memory key store could be considered with a batch value store.
 
 Furthermore, from DB PoV the following most important questions has to be considered:
-- SQL: uptime, fault tolerance,
-- NoSql: query complexity, consistency vs uptime.
+- **SQL**: uptime, fault tolerance,
+- **NoSql**: query complexity, consistency vs uptime.
 
 For the PoC SQL was chosen, however, based on the interfaces, which are implemented, application is open for changing the DB.
 
@@ -72,42 +72,48 @@ There are three different ways to send a query to a service through HTTP request
 Path has been chosen, because of simplicity, however, the solution is open for requests in the Body.
 
 4 query parameter can be added, in arbitrary order:
-- years: int values between 1880 and now; separated by `,` character.
-- titles: string values separated by `,` character.
-- cast: string values separated by `,` character.
-- genres: provided genres as strings, separated by `,` character.
+- **years**: int values between 1880 and now; separated by `,` character.
+- **titles**: string values separated by `,` character.
+- **cast**: string values separated by `,` character.
+- **genres**: provided genres as strings, separated by `,` character.
 
 The response can be either a Success or a Failure, that is described in the body and the response code.
 
 #### Solution Architecture
 
 The main components are:
-- AWS S3 Bucket: an "interface" between the service and the Data Providers. Changes in the Bucket are published to a messaging service (below).
-- Amazon SQS: stores the changes in the Bucket. This layer provides a reliable storage for the messages, if the service would be down.
-- Movie Svc: the service itself,
-- PostgreSQL: SQL DB for PoC,
-- Kubernetes: orchestration service. 
+- **AWS S3 Bucket**: an "interface" between the service and the Data Providers. Changes in the Bucket are published to a messaging service (below).
+- **Amazon SQS**: stores the changes in the Bucket. This layer provides a reliable storage for the messages, if the service would be down.
+- **Movie Svc**: the service itself,
+- **PostgreSQL**: SQL DB for PoC,
+- **Kubernetes**: orchestration service. 
 
 The Movie Service expects the SQS queue is created (that has to be part of the configuration / set up of the system).
+
+![deployment](./doc/deployment.png)
 
 #### Application Architecture
 
 Application fundamentally separates the read and write side of the application (in CQRS style).
 
 Interfaces: 
-- read: HTTP
-- write: Amazon SQS
+- **read**: HTTP
+- **write**: Amazon SQS
 
 To be open for further changes, and take leverage of the IDL, the service's messages are described in proto.
 
 In tune with the interfaces, the application has two major parts:
-- QueryService - that serves the queries, and
-- DataProviderService - that ensure reading data from the Amazon SQS and write it into the DB in a reliable fashion.
+- **QueryService** - that serves the queries, and
+- **DataProviderService** - that ensure reading data from the Amazon SQS and write it into the DB in a reliable fashion.
 Considering the currently used (SQL) server's ACID properties, reading from the SQS writing in the DB and ACK the message happens in one transaction.
 If during this time the service would go down, message would not be lost, therefore the operation would be repeated.
 Considering that this updates a Movie data in the DB, this would not cause any issue (time invariant / idempotent operation).
 
 The DB is a shared resources between the two sides, but this could not cause issues, since only one is writing into the DB.
+
+![component](./doc/component.png)
+
+![sequence](./doc/sequence.png)
 
 #### Consistency considerations
 

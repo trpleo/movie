@@ -1,0 +1,30 @@
+@startuml
+'https://plantuml.com/component-diagram
+
+node "Movie" {
+
+    package "Query Svc" {
+      "HTTP /movie" - [HttpApi]
+      [QueryService]
+      [HttpApi] -- [QueryService]: <<use>>
+    }
+
+    package "Data Provider Service" {
+        [DBBridge]
+        [QueueBridge]
+        [QueueBridge] --> [DBBridge]
+    }
+}
+
+queue "SQS"
+
+frame "Data Provider Bucket"
+
+database "SQL"
+
+"Data Provider Bucket" --> "SQS"
+"SQS" --> [QueueBridge]
+[DBBridge] --> "SQL"
+[QueryService] <-- "SQL"
+
+@enduml
